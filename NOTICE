@@ -1,0 +1,30 @@
+Document Preview Editor
+Copyright (c) 2025 sawyer-shi
+
+This product includes software developed by sawyer-shi.
+GitHub: https://github.com/sawyer-shi/document-preview-editor
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+================================================================================
+
+This project uses the following third-party libraries:
+
+Flask - Copyright (c) 2010 by Armin Ronacher and contributors
+python-docx - Copyright (c) 2013 Steve Canny
+Pillow - Copyright (c) 2010-2023 by Jeffrey A. Clark (Alex) and contributors
+lxml - Copyright (c) 2004 Infrae
+pywin32 - Copyright (c) 1994-2008, Mark Hammond
+pypandoc - Copyright (c) 2014-2023 Juho Vepsäläinen and contributors
+
+All third-party libraries are used under their respective licenses. 

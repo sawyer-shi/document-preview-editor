@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ get_text('page_title') }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="language-selector">
+                <div class="language-radio-group">
+                    <label>{{ get_text('language') }}:</label>
+                    {% for lang_code, lang_name in available_languages.items() %}
+                        <label class="radio-label">
+                            <input type="radio" name="language" value="{{ lang_code }}" 
+                                   {% if current_language == lang_code %}checked{% endif %}
+                                   onchange="changeLanguage('{{ lang_code }}')">
+                            <span class="radio-text">{{ lang_name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="header-title"></div>
+            <div class="api-test-link">
+                <a href="/test?lang={{ current_language }}" target="_blank" class="btn btn-outline">{{ get_text('api_test') }}</a>
+            </div>
+        </header>
+        <div class="main-title-in-middle">
+            <h1>{{ get_text('page_title') }}</h1>
+            {% if current_language == 'zh' %}
+            <p>{{ get_text('page_subtitle') }}</p>
+            {% endif %}
+        </div>
+        <div class="main-content">
+            <!-- 左侧：原始文档显示 -->
+            <div class="panel left-panel">
+                <div class="panel-header">
+                    <h2>{{ get_text('original_document') }}
+                        <input type="file" id="documentInput" accept=".docx,.txt" style="display: none;">
+                        <button id="uploadBtn" class="btn btn-primary" style="margin-left: 15px;">{{ get_text('select_document') }}</button>
+                        <span id="fileName" class="file-name" style="margin-left: 10px;"></span>
+                    </h2>
+                </div>
+                <div class="panel-content" id="originalContent">
+                    <div class="placeholder">
+                        <i class="icon-document"></i>
+                        <p>{{ get_text('upload_prompt') }}</p>
+                        <p class="sub-text">{{ get_text('upload_support') }}</p>
+                    </div>
+                </div>
+                <div class="document-info" id="originalDocInfo" style="display: none;">
+                    <div class="info-item">
+                        <span class="info-label">{{ get_text('file_size') }}:</span>
+                        <span id="fileSizeInfo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{{ get_text('modifications_count') }}:</span>
+                        <span id="paragraphCountInfo">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间：修改条目列表 -->
+            <div class="panel middle-panel">
+                <div class="panel-header">
+                    <div class="panel-header-top">
+                        <h2>{{ get_text('modifications') }}</h2>
+                        <div class="header-buttons">
+                            <button id="addModBtn" class="btn btn-secondary" disabled>{{ get_text('add_modification') }}</button>
+                            <button id="batchImportBtn" class="btn btn-secondary" disabled>{{ get_text('batch_import') }}</button>
+                        </div>
+                    </div>
+                    <!-- 统计信息将由JavaScript动态插入到这里 -->
+                </div>
+                <div class="panel-content" id="modificationsContent">
+                    <div class="placeholder">
+                        <i class="icon-edit"></i>
+                        <p>{{ get_text('no_modifications') }}</p>
+                    </div>
+                </div>
+                <div class="modifications-actions">
+                    <button id="applyModsBtn" class="btn btn-success" disabled>{{ get_text('apply_modifications') }}</button>
+                    <button id="clearModsBtn" class="btn btn-danger" disabled>{{ get_text('clear_modifications') }}</button>
+                </div>
+            </div>
+
+            <!-- 右侧：修改后文档预览 -->
+            <div class="panel right-panel">
+                <div class="panel-header">
+                    <h2>{{ get_text('preview_document') }}
+                        <button id="downloadBtn" class="btn btn-success" disabled style="margin-left: 15px;">{{ get_text('download_document') }}</button>
+                    </h2>
+                </div>
+                <div class="panel-content" id="previewContent">
+                    <div class="placeholder">
+                        <i class="icon-preview"></i>
+                        <p>{{ get_text('preview_prompt') }}</p>
+                    </div>
+                </div>
+                <div class="document-info" id="previewDocInfo" style="display: none;">
+                    <div class="info-item">
+                        <span class="info-label">{{ get_text('modifications_count') }}:</span>
+                        <span id="appliedModsCountInfo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{{ get_text('last_modified') }}:</span>
+                        <span id="lastModifiedInfo">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量导入模态框 -->
+        <div id="batchImportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>{{ get_text('batch_import_modifications') }}</h3>
+                    <span class="close" onclick="hideBatchImportModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="import-section">
+                        <h4>{{ get_text('step1_download_template') }}</h4>
+                        <p>{{ get_text('download_csv_template_desc') }}</p>
+                        <div class="template-buttons" style="margin-bottom: 10px;">
+                            <button id="downloadTemplateBtn" class="btn btn-primary">{{ get_text('download_csv_template') }}</button>
+                        </div>
+                        
+                        <h4 style="margin-top: 20px;">{{ get_text('step2_upload_csv') }}</h4>
+                        <p>{{ get_text('csv_file_requirements') }}</p>
+                        <ul>
+                            <li><strong>{{ get_text('csv_field_original') }}</strong></li>
+                            <li><strong>{{ get_text('csv_field_modified') }}</strong></li>
+                            <li><strong>{{ get_text('csv_field_reason') }}</strong></li>
+                        </ul>
+                        
+                        <div class="form-group" style="display: block !important; visibility: visible !important; margin-bottom: 20px;">
+                            <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                            <button id="selectCsvBtn" class="btn btn-secondary" style="display: inline-block !important; visibility: visible !important; background: #6c757d; color: white; border: 1px solid #6c757d; padding: 10px 20px; border-radius: 6px; margin-right: 10px;">Select CSV File</button>
+                            <span id="csvFileName" class="file-name"></span>
+                        </div>
+                        
+                        <div id="csvPreview" class="csv-preview" style="display: none;">
+                            <h4>{{ get_text('preview_import_data') }}</h4>
+                            <div id="csvPreviewContent"></div>
+                            <p id="csvValidationResult"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="importCsvBtn" class="btn btn-primary" disabled>{{ get_text('import_data') }}</button>
+                    <button class="btn btn-secondary" onclick="hideBatchImportModal()">{{ get_text('cancel') }}</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加修改条目的模态框 -->
+        <div id="modificationModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>{{ get_text('add_modification') }}</h3>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="originalText">{{ get_text('original_text') }}:</label>
+                        <textarea id="originalText" rows="3" placeholder="{{ get_text('original_text_placeholder') }}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="newText">{{ get_text('new_text') }}:</label>
+                        <textarea id="newText" rows="3" placeholder="{{ get_text('new_text_placeholder') }}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">{{ get_text('modification_reason') }}:</label>
+                        <textarea id="reason" rows="2" placeholder="{{ get_text('reason_placeholder') }}"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveModBtn" class="btn btn-primary">{{ get_text('save') }}</button>
+                    <button id="cancelModBtn" class="btn btn-secondary">{{ get_text('cancel') }}</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载提示 -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p id="loadingText">{{ get_text('processing') }}</p>
+            </div>
+        </div>
+
+        <!-- 消息提示 -->
+        <div id="messageToast" class="message-toast"></div>
+        
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>&copy; 2025 <a href="https://github.com/sawyer-shi" target="_blank" style="color: #007bff; text-decoration: none;">sawyer-shi</a> | Document Preview Editor | Licensed under <a href="https://github.com/sawyer-shi/document-preview-editor/blob/main/LICENSE" target="_blank" style="color: #007bff; text-decoration: none;">Apache 2.0</a></p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html> 

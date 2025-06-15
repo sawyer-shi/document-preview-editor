@@ -1,0 +1,41 @@
+{
+  "timestamp": "20250612_160858",
+  "base_url": "http://127.0.0.1:5000",
+  "results": [
+    {
+      "scenario": "本地文件基础测试",
+      "success": true,
+      "language_status": 200,
+      "auto_load_status": 200,
+      "description": "Local Files Basic Test"
+    },
+    {
+      "scenario": "本地文件自动应用",
+      "success": true,
+      "language_status": 200,
+      "auto_load_status": 200,
+      "description": "Local Files with Auto Apply"
+    },
+    {
+      "scenario": "英文环境测试",
+      "success": true,
+      "language_status": 200,
+      "auto_load_status": 200,
+      "description": "English Environment Test"
+    },
+    {
+      "scenario": "远程URL测试",
+      "success": true,
+      "language_status": 200,
+      "auto_load_status": 200,
+      "description": "Remote URL Test"
+    },
+    {
+      "scenario": "混合来源测试",
+      "success": true,
+      "language_status": 200,
+      "auto_load_status": 200,
+      "description": "Mixed Sources Test"
+    }
+  ]
+}

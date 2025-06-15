@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>API接口测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            min-height: 100vh;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .api-test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .api-test-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        /* 英文标题字体优化 */
+        .api-test-header h1.en-title {
+            font-size: 2rem;
+        }
+        
+        .back-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .test-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .scenario-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .scenario-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .scenario-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .scenario-card.collapsed .scenario-details {
+            display: none;
+        }
+        
+        .scenario-card.expanded .scenario-details {
+            display: block;
+        }
+        
+        .scenario-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+        
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .scenario-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .scenario-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .expand-indicator {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+            color: #667eea;
+        }
+        
+        .scenario-card.expanded .expand-indicator {
+            transform: rotate(180deg);
+        }
+        
+        .scenario-details {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .request-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #495057;
+        }
+        
+        .request-info h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #343a40;
+        }
+        
+        .api-url {
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 6px 8px;
+            margin: 4px 0;
+            word-break: break-all;
+            color: #0066cc;
+            display: block;
+        }
+        
+        .request-body {
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 6px 8px;
+            margin: 4px 0;
+            white-space: pre-wrap;
+            color: #28a745;
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin-right: 5px;
+        }
+        
+        .test-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .download-btn {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+        
+        .download-btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-area {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            min-height: 60px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        
+        .unified-download-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .unified-download-section h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .unified-download-section p {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        
+        .unified-download-section .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 1200px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="api-test-header">
+            {% if current_language == 'zh' %}
+                <h1>API接口测试</h1>
+                <p>文档处理API接口功能测试平台</p>
+            {% else %}
+                <h1 class="en-title">API Interface Testing</h1>
+                <p>Document Processing API Interface Testing Platform</p>
+            {% endif %}
+            <a href="/" class="back-link">
+                {% if current_language == 'zh' %}
+                    ← 返回主页
+                {% else %}
+                    ← Back to Main
+                {% endif %}
+            </a>
+        </div>
+        
+                <!-- 统一测试文件下载区域 -->
+        <div class="unified-download-section">
+            {% if current_language == 'zh' %}
+                <h2>📥 测试文件下载</h2>
+                <p>下载测试用的样例文档和修改条目文件</p>
+            {% else %}
+                <h2>📥 Test Files Download</h2>
+                <p>Download sample documents and modification files for testing</p>
+            {% endif %}
+            <div class="download-buttons">
+                <a href="/api/download_sample/document/{{ current_language }}" class="download-btn sample-doc-btn" onclick="preventCollapse(event)">
+                    {% if current_language == 'zh' %}📄 样例文档{% else %}📄 Sample Document{% endif %}
+                </a>
+                <a href="/api/download_sample/modifications/{{ current_language }}" class="download-btn sample-mod-btn" onclick="preventCollapse(event)">
+                    {% if current_language == 'zh' %}📝 修改条目{% else %}📝 Modifications{% endif %}
+                </a>
+            </div>
+        </div>
+
+<div class="test-grid">
+            <!-- 自动加载场景测试 -->
+            <div class="test-panel">
+                {% if current_language == 'zh' %}
+                    <h2>自动加载场景测试</h2>
+                    <p>测试自动加载功能，执行后跳转到主页加载对应数据</p>
+                {% else %}
+                    <h2>Auto Load Scenario Testing</h2>
+                    <p>Test auto load functionality, redirect to main page after execution</p>
+                {% endif %}
+                
+                <div class="scenario-grid">
+                    <!-- 场景1: 文件地址测试 -->
+                    <div class="scenario-card collapsed" onclick="toggleScenario(this, 'file_address')">
+                        <div class="scenario-header">
+                            <div>
+                                {% if current_language == 'zh' %}
+                                    <div class="scenario-title">文件地址测试</div>
+                                    <div class="scenario-desc">原文件和修改条目使用文件地址</div>
+                                {% else %}
+                                    <div class="scenario-title">File Address Test</div>
+                                    <div class="scenario-desc">Use file addresses for document and modifications</div>
+                                {% endif %}
+                            </div>
+                            <div class="expand-indicator">▼</div>
+                        </div>
+                        
+                        <div class="scenario-details">
+                            <div class="request-info" id="request_info_file_address">
+                                {% if current_language == 'zh' %}
+                                    <h4>📡 请求信息预览</h4>
+                                    <div>API地址: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>请求体: <span class="request-body">等待参数输入...</span></div>
+                                {% else %}
+                                    <h4>📡 Request Info Preview</h4>
+                                    <div>API URL: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>Request Body: <span class="request-body">Waiting for parameters...</span></div>
+                                {% endif %}
+                            </div>
+                            <form onsubmit="runAutoLoadTest(event, 'file_address')">
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>原文件docx地址</label>
+                                    {% else %}
+                                        <label>Original DOCX File Path</label>
+                                    {% endif %}
+                                    <input type="text" name="document" placeholder="sample_document.docx" value="sample_document.docx" onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>修改条目文件csv地址</label>
+                                    {% else %}
+                                        <label>Modification CSV File Path</label>
+                                    {% endif %}
+                                    <input type="text" name="modifications" placeholder="sample_modifications.csv" value="sample_modifications.csv" onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>语言</label>
+                                    {% else %}
+                                        <label>Language</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="language" value="zh" {% if current_language == "zh" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}中文{% else %}Chinese{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="language" value="en" {% if current_language == "en" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}English{% else %}English{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>自动应用</label>
+                                    {% else %}
+                                        <label>Auto Apply</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="auto_apply" value="true" onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}是{% else %}Yes{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="auto_apply" value="false" checked onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}否{% else %}No{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                {% if current_language == 'zh' %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">运行并跳转</button>
+                                {% else %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">Run and Redirect</button>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="result-area" id="result_file_address">
+                                {% if current_language == 'zh' %}
+                                    等待测试运行...
+                                {% else %}
+                                    Waiting for test to run...
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 场景2: 文件流测试 -->
+                    <div class="scenario-card collapsed" onclick="toggleScenario(this, 'file_upload')">
+                        <div class="scenario-header">
+                            <div>
+                                {% if current_language == 'zh' %}
+                                    <div class="scenario-title">文件流测试</div>
+                                    <div class="scenario-desc">上传本地原文件和修改条目文件</div>
+                                {% else %}
+                                    <div class="scenario-title">File Upload Test</div>
+                                    <div class="scenario-desc">Upload local document and modification files</div>
+                                {% endif %}
+                            </div>
+                            <div class="expand-indicator">▼</div>
+                        </div>
+                        
+                        <div class="scenario-details">
+                            <div class="request-info" id="request_info_file_upload">
+                                {% if current_language == 'zh' %}
+                                    <h4>📡 请求信息预览</h4>
+                                    <div>API地址: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>请求体: <span class="request-body">等待参数输入...</span></div>
+                                {% else %}
+                                    <h4>📡 Request Info Preview</h4>
+                                    <div>API URL: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>Request Body: <span class="request-body">Waiting for parameters...</span></div>
+                                {% endif %}
+                            </div>
+                            <form onsubmit="runAutoLoadTest(event, 'file_upload')">
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>上传原文件docx</label>
+                                    {% else %}
+                                        <label>Upload Original DOCX</label>
+                                    {% endif %}
+                                    <div class="custom-file-upload">
+                                        <input type="file" name="document_file" id="document_file_upload_1" accept=".docx,.txt" onchange="updateFileInfoSync(this, 'document_file_info_1'); updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                        <label for="document_file_upload_1" class="custom-file-button" onclick="preventCollapse(event)">
+                                            Choose File
+                                        </label>
+                                        <span class="custom-file-info no-file" id="document_file_info_1">
+                                            No file chosen
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>上传修改条目文件csv</label>
+                                    {% else %}
+                                        <label>Upload Modification CSV</label>
+                                    {% endif %}
+                                    <div class="custom-file-upload">
+                                        <input type="file" name="modifications_file" id="modifications_file_upload_1" accept=".csv" onchange="updateFileInfoSync(this, 'modifications_file_info_1'); updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                        <label for="modifications_file_upload_1" class="custom-file-button" onclick="preventCollapse(event)">
+                                            Choose File
+                                        </label>
+                                        <span class="custom-file-info no-file" id="modifications_file_info_1">
+                                            No file chosen
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>语言</label>
+                                    {% else %}
+                                        <label>Language</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="language" value="zh" {% if current_language == "zh" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}中文{% else %}Chinese{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="language" value="en" {% if current_language == "en" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}English{% else %}English{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>自动应用</label>
+                                    {% else %}
+                                        <label>Auto Apply</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="auto_apply" value="true" onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}是{% else %}Yes{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="auto_apply" value="false" checked onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}否{% else %}No{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                {% if current_language == 'zh' %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">运行并跳转</button>
+                                {% else %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">Run and Redirect</button>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="result-area" id="result_file_upload">
+                                {% if current_language == 'zh' %}
+                                    等待测试运行...
+                                {% else %}
+                                    Waiting for test to run...
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 场景3: 文件地址+JSON测试 -->
+                    <div class="scenario-card collapsed" onclick="toggleScenario(this, 'file_address_json')">
+                        <div class="scenario-header">
+                            <div>
+                                {% if current_language == 'zh' %}
+                                    <div class="scenario-title">文件地址+JSON测试</div>
+                                    <div class="scenario-desc">原文件使用地址，修改条目使用JSON</div>
+                                {% else %}
+                                    <div class="scenario-title">File Address + JSON Test</div>
+                                    <div class="scenario-desc">Use file address for document, JSON for modifications</div>
+                                {% endif %}
+                            </div>
+                            <div class="expand-indicator">▼</div>
+                        </div>
+                        
+                        <div class="scenario-details">
+                            <div class="request-info" id="request_info_file_address_json">
+                                {% if current_language == 'zh' %}
+                                    <h4>📡 请求信息预览</h4>
+                                    <div>API地址: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>请求体: <span class="request-body">等待参数输入...</span></div>
+                                {% else %}
+                                    <h4>📡 Request Info Preview</h4>
+                                    <div>API URL: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>Request Body: <span class="request-body">Waiting for parameters...</span></div>
+                                {% endif %}
+                            </div>
+                            
+                            <form onsubmit="runAutoLoadTest(event, 'file_address_json')">
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>原文件docx地址</label>
+                                    {% else %}
+                                        <label>Original DOCX File Path</label>
+                                    {% endif %}
+                                    <input type="text" name="document" placeholder="sample_document.docx" value="sample_document.docx" onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>修改条目JSON数组</label>
+                                    {% else %}
+                                        <label>Modifications JSON</label>
+                                    {% endif %}
+                                    {% if current_language == 'zh' %}
+                                        <textarea name="modifications" placeholder='[{"original_text":"旧文本","new_text":"新文本","reason":"修改原因"}]' onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">[{"original_text":"Document Preview Editor","new_text":"Document Preview Editor Pro","reason":"版本升级"},{"original_text":"基于Flask的智能文档处理系统","new_text":"基于Flask的高级智能文档处理系统","reason":"功能增强"},{"original_text":"支持多种文档操作模式","new_text":"支持十多种文档操作模式","reason":"功能扩展"}]</textarea>
+                                    {% else %}
+                                        <textarea name="modifications" placeholder='[{"original_text":"old text","new_text":"new text","reason":"modification reason"}]' onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">[{"original_text":"Document Preview Editor","new_text":"Document Preview Editor Pro","reason":"Version upgrade"},{"original_text":"intelligent document processing system based on Flask","new_text":"advanced intelligent document processing system based on Flask","reason":"Feature enhancement"},{"original_text":"supporting multiple document operation modes","new_text":"supporting over ten document operation modes","reason":"Feature expansion"}]</textarea>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>语言</label>
+                                    {% else %}
+                                        <label>Language</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="language" value="zh" {% if current_language == "zh" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}中文{% else %}Chinese{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="language" value="en" {% if current_language == "en" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}English{% else %}English{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>自动应用</label>
+                                    {% else %}
+                                        <label>Auto Apply</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="auto_apply" value="true" onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}是{% else %}Yes{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="auto_apply" value="false" checked onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}否{% else %}No{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                {% if current_language == 'zh' %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">运行并跳转</button>
+                                {% else %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">Run and Redirect</button>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="result-area" id="result_file_address_json">
+                                {% if current_language == 'zh' %}
+                                    等待测试运行...
+                                {% else %}
+                                    Waiting for test to run...
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 场景4: 文件流+JSON测试 -->
+                    <div class="scenario-card collapsed" onclick="toggleScenario(this, 'file_upload_json')">
+                        <div class="scenario-header">
+                            <div>
+                                {% if current_language == 'zh' %}
+                                    <div class="scenario-title">文件流+JSON测试</div>
+                                    <div class="scenario-desc">上传原文件，修改条目使用JSON</div>
+                                {% else %}
+                                    <div class="scenario-title">File Upload + JSON Test</div>
+                                    <div class="scenario-desc">Upload document file, use JSON for modifications</div>
+                                {% endif %}
+                            </div>
+                            <div class="expand-indicator">▼</div>
+                        </div>
+                        
+                        <div class="scenario-details">
+                            <div class="request-info" id="request_info_file_upload_json">
+                                {% if current_language == 'zh' %}
+                                    <h4>📡 请求信息预览</h4>
+                                    <div>API地址: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>请求体: <span class="request-body">等待参数输入...</span></div>
+                                {% else %}
+                                    <h4>📡 Request Info Preview</h4>
+                                    <div>API URL: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>Request Body: <span class="request-body">Waiting for parameters...</span></div>
+                                {% endif %}
+                            </div>
+                            
+                            <form onsubmit="runAutoLoadTest(event, 'file_upload_json')">
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>上传原文件docx</label>
+                                    {% else %}
+                                        <label>Upload Original DOCX</label>
+                                    {% endif %}
+                                    <div class="custom-file-upload">
+                                        <input type="file" name="document_file" id="document_file_upload_2" accept=".docx,.txt" onchange="updateFileInfoSync(this, 'document_file_info_2'); updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                        <label for="document_file_upload_2" class="custom-file-button" onclick="preventCollapse(event)">
+                                            Choose File
+                                        </label>
+                                        <span class="custom-file-info no-file" id="document_file_info_2">
+                                            No file chosen
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>修改条目JSON数组</label>
+                                    {% else %}
+                                        <label>Modifications JSON</label>
+                                    {% endif %}
+                                    {% if current_language == 'zh' %}
+                                        <textarea name="modifications" placeholder='[{"original_text":"旧文本","new_text":"新文本","reason":"修改原因"}]' onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">[{"original_text":"Document Preview Editor","new_text":"Document Preview Editor Pro","reason":"版本升级"},{"original_text":"基于Flask的智能文档处理系统","new_text":"基于Flask的高级智能文档处理系统","reason":"功能增强"},{"original_text":"支持多种文档操作模式","new_text":"支持十多种文档操作模式","reason":"功能扩展"}]</textarea>
+                                    {% else %}
+                                        <textarea name="modifications" placeholder='[{"original_text":"old text","new_text":"new text","reason":"modification reason"}]' onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">[{"original_text":"Document Preview Editor","new_text":"Document Preview Editor Pro","reason":"Version upgrade"},{"original_text":"intelligent document processing system based on Flask","new_text":"advanced intelligent document processing system based on Flask","reason":"Feature enhancement"},{"original_text":"supporting multiple document operation modes","new_text":"supporting over ten document operation modes","reason":"Feature expansion"}]</textarea>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>语言</label>
+                                    {% else %}
+                                        <label>Language</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="language" value="zh" {% if current_language == "zh" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}中文{% else %}Chinese{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="language" value="en" {% if current_language == "en" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}English{% else %}English{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>自动应用</label>
+                                    {% else %}
+                                        <label>Auto Apply</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="auto_apply" value="true" onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}是{% else %}Yes{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="auto_apply" value="false" checked onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}否{% else %}No{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                {% if current_language == 'zh' %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">运行并跳转</button>
+                                {% else %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">Run and Redirect</button>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="result-area" id="result_file_upload_json">
+                                {% if current_language == 'zh' %}
+                                    等待测试运行...
+                                {% else %}
+                                    Waiting for test to run...
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 直接获取场景测试 -->
+            <div class="test-panel">
+                {% if current_language == 'zh' %}
+                    <h2>直接获取场景测试</h2>
+                    <p>测试直接获取功能，执行后直接返回处理结果</p>
+                {% else %}
+                    <h2>Direct Fetch Scenario Testing</h2>
+                    <p>Test direct fetch functionality, return processing results directly</p>
+                {% endif %}
+                
+                <div class="scenario-grid">
+                    <!-- 场景1: 文件地址测试 -->
+                    <div class="scenario-card collapsed" onclick="toggleScenario(this, 'direct_file_address')">
+                        <div class="scenario-header">
+                            <div>
+                                {% if current_language == 'zh' %}
+                                    <div class="scenario-title">文件地址测试</div>
+                                    <div class="scenario-desc">原文件和修改条目使用文件地址</div>
+                                {% else %}
+                                    <div class="scenario-title">Direct File Address Test</div>
+                                    <div class="scenario-desc">Use file addresses for document and modifications</div>
+                                {% endif %}
+                            </div>
+                            <div class="expand-indicator">▼</div>
+                        </div>
+                        
+                        <div class="scenario-details">
+                            <div class="request-info" id="request_info_direct_file_address">
+                                {% if current_language == 'zh' %}
+                                    <h4>📡 请求信息预览</h4>
+                                    <div>API地址: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>请求体: <span class="request-body">等待参数输入...</span></div>
+                                {% else %}
+                                    <h4>📡 Request Info Preview</h4>
+                                    <div>API URL: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>Request Body: <span class="request-body">Waiting for parameters...</span></div>
+                                {% endif %}
+                            </div>
+                            <form onsubmit="runDirectFetchTest(event, 'direct_file_address')">
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>原文件docx地址</label>
+                                    {% else %}
+                                        <label>Original DOCX File Path</label>
+                                    {% endif %}
+                                    <input type="text" name="document" placeholder="sample_document.docx" value="sample_document.docx" onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>修改条目文件csv地址</label>
+                                    {% else %}
+                                        <label>Modification CSV File Path</label>
+                                    {% endif %}
+                                    <input type="text" name="modifications" placeholder="sample_modifications.csv" value="sample_modifications.csv" onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>语言</label>
+                                    {% else %}
+                                        <label>Language</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="language" value="zh" {% if current_language == "zh" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}中文{% else %}Chinese{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="language" value="en" {% if current_language == "en" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}English{% else %}English{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                {% if current_language == 'zh' %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">运行并下载</button>
+                                {% else %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">Run and Download</button>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="result-area" id="result_direct_file_address">
+                                {% if current_language == 'zh' %}
+                                    等待测试运行...
+                                {% else %}
+                                    Waiting for test to run...
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 场景2: 文件流测试 -->
+                    <div class="scenario-card collapsed" onclick="toggleScenario(this, 'direct_file_upload')">
+                        <div class="scenario-header">
+                            <div>
+                                {% if current_language == 'zh' %}
+                                    <div class="scenario-title">文件流测试</div>
+                                    <div class="scenario-desc">上传本地原文件和修改条目文件</div>
+                                {% else %}
+                                    <div class="scenario-title">Direct File Upload Test</div>
+                                    <div class="scenario-desc">Upload local document and modification files</div>
+                                {% endif %}
+                            </div>
+                            <div class="expand-indicator">▼</div>
+                        </div>
+                        
+                        <div class="scenario-details">
+                            <div class="request-info" id="request_info_direct_file_upload">
+                                {% if current_language == 'zh' %}
+                                    <h4>📡 请求信息预览</h4>
+                                    <div>API地址: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>请求体: <span class="request-body">等待参数输入...</span></div>
+                                {% else %}
+                                    <h4>📡 Request Info Preview</h4>
+                                    <div>API URL: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>Request Body: <span class="request-body">Waiting for parameters...</span></div>
+                                {% endif %}
+                            </div>
+                            <form onsubmit="runDirectFetchTest(event, 'direct_file_upload')">
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>上传原文件docx</label>
+                                    {% else %}
+                                        <label>Upload Original DOCX</label>
+                                    {% endif %}
+                                    <div class="custom-file-upload">
+                                        <input type="file" name="document_file" id="document_file_upload_3" accept=".docx,.txt" onchange="updateFileInfoSync(this, 'document_file_info_3'); updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                        <label for="document_file_upload_3" class="custom-file-button" onclick="preventCollapse(event)">
+                                            Choose File
+                                        </label>
+                                        <span class="custom-file-info no-file" id="document_file_info_3">
+                                            No file chosen
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>上传修改条目文件csv</label>
+                                    {% else %}
+                                        <label>Upload Modification CSV</label>
+                                    {% endif %}
+                                    <div class="custom-file-upload">
+                                        <input type="file" name="modifications_file" id="modifications_file_upload_3" accept=".csv" onchange="updateFileInfoSync(this, 'modifications_file_info_3'); updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                        <label for="modifications_file_upload_3" class="custom-file-button" onclick="preventCollapse(event)">
+                                            Choose File
+                                        </label>
+                                        <span class="custom-file-info no-file" id="modifications_file_info_3">
+                                            No file chosen
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>语言</label>
+                                    {% else %}
+                                        <label>Language</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="language" value="zh" {% if current_language == "zh" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}中文{% else %}Chinese{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="language" value="en" {% if current_language == "en" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}English{% else %}English{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                {% if current_language == 'zh' %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">运行并下载</button>
+                                {% else %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">Run and Download</button>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="result-area" id="result_direct_file_upload">
+                                {% if current_language == 'zh' %}
+                                    等待测试运行...
+                                {% else %}
+                                    Waiting for test to run...
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 场景3: 文件地址+JSON测试 -->
+                    <div class="scenario-card collapsed" onclick="toggleScenario(this, 'direct_file_address_json')">
+                        <div class="scenario-header">
+                            <div>
+                                {% if current_language == 'zh' %}
+                                    <div class="scenario-title">文件地址+JSON测试</div>
+                                    <div class="scenario-desc">原文件用地址，修改条目用JSON数组</div>
+                                {% else %}
+                                    <div class="scenario-title">Direct File Address + JSON Test</div>
+                                    <div class="scenario-desc">File address for document, JSON array for modifications</div>
+                                {% endif %}
+                            </div>
+                            <div class="expand-indicator">▼</div>
+                        </div>
+                        
+                        <div class="scenario-details">
+                            <div class="request-info" id="request_info_direct_file_address_json">
+                                {% if current_language == 'zh' %}
+                                    <h4>📡 请求信息预览</h4>
+                                    <div>API地址: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>请求体: <span class="request-body">等待参数输入...</span></div>
+                                {% else %}
+                                    <h4>📡 Request Info Preview</h4>
+                                    <div>API URL: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>Request Body: <span class="request-body">Waiting for parameters...</span></div>
+                                {% endif %}
+                            </div>
+                            <form onsubmit="runDirectFetchTest(event, 'direct_file_address_json')">
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>原文件docx地址</label>
+                                    {% else %}
+                                        <label>Original DOCX File Path</label>
+                                    {% endif %}
+                                    <input type="text" name="document" placeholder="sample_document.docx" value="sample_document.docx" onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>修改条目JSON数组</label>
+                                    {% else %}
+                                        <label>Modifications JSON</label>
+                                    {% endif %}
+                                    {% if current_language == 'zh' %}
+                                        <textarea name="modifications" placeholder='[{"original_text":"旧文本","new_text":"新文本","reason":"修改原因"}]' onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">[{"original_text":"Document Preview Editor","new_text":"Document Preview Editor Pro","reason":"版本升级"},{"original_text":"基于Flask的智能文档处理系统","new_text":"基于Flask的高级智能文档处理系统","reason":"功能增强"},{"original_text":"支持多种文档操作模式","new_text":"支持十多种文档操作模式","reason":"功能扩展"}]</textarea>
+                                    {% else %}
+                                        <textarea name="modifications" placeholder='[{"original_text":"old text","new_text":"new text","reason":"modification reason"}]' onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">[{"original_text":"Document Preview Editor","new_text":"Document Preview Editor Pro","reason":"Version upgrade"},{"original_text":"intelligent document processing system based on Flask","new_text":"advanced intelligent document processing system based on Flask","reason":"Feature enhancement"},{"original_text":"supporting multiple document operation modes","new_text":"supporting over ten document operation modes","reason":"Feature expansion"}]</textarea>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>语言</label>
+                                    {% else %}
+                                        <label>Language</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="language" value="zh" {% if current_language == "zh" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}中文{% else %}Chinese{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="language" value="en" {% if current_language == "en" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}English{% else %}English{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                {% if current_language == 'zh' %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">运行并下载</button>
+                                {% else %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">Run and Download</button>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="result-area" id="result_direct_file_address_json">
+                                {% if current_language == 'zh' %}
+                                    等待测试运行...
+                                {% else %}
+                                    Waiting for test to run...
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 场景4: 文件流+JSON测试 -->
+                    <div class="scenario-card collapsed" onclick="toggleScenario(this, 'direct_file_upload_json')">
+                        <div class="scenario-header">
+                            <div>
+                                {% if current_language == 'zh' %}
+                                    <div class="scenario-title">文件流+JSON测试</div>
+                                    <div class="scenario-desc">上传本地原文件，修改条目用JSON数组</div>
+                                {% else %}
+                                    <div class="scenario-title">Direct File Upload + JSON Test</div>
+                                    <div class="scenario-desc">Upload local document, JSON array for modifications</div>
+                                {% endif %}
+                            </div>
+                            <div class="expand-indicator">▼</div>
+                        </div>
+                        
+                        <div class="scenario-details">
+                            <div class="request-info" id="request_info_direct_file_upload_json">
+                                {% if current_language == 'zh' %}
+                                    <h4>📡 请求信息预览</h4>
+                                    <div>API地址: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>请求体: <span class="request-body">等待参数输入...</span></div>
+                                {% else %}
+                                    <h4>📡 Request Info Preview</h4>
+                                    <div>API URL: <span class="api-url">POST /api/auto_load</span></div>
+                                    <div>Request Body: <span class="request-body">Waiting for parameters...</span></div>
+                                {% endif %}
+                            </div>
+                            <form onsubmit="runDirectFetchTest(event, 'direct_file_upload_json')">
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>上传原文件docx</label>
+                                    {% else %}
+                                        <label>Upload Original DOCX</label>
+                                    {% endif %}
+                                    <div class="custom-file-upload">
+                                        <input type="file" name="document_file" id="document_file_upload_4" accept=".docx,.txt" onchange="updateFileInfoSync(this, 'document_file_info_4'); updateRequestInfo(this)" onclick="preventCollapse(event)">
+                                        <label for="document_file_upload_4" class="custom-file-button" onclick="preventCollapse(event)">
+                                            Choose File
+                                        </label>
+                                        <span class="custom-file-info no-file" id="document_file_info_4">
+                                            No file chosen
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>修改条目JSON数组</label>
+                                    {% else %}
+                                        <label>Modifications JSON</label>
+                                    {% endif %}
+                                    {% if current_language == 'zh' %}
+                                        <textarea name="modifications" placeholder='[{"original_text":"旧文本","new_text":"新文本","reason":"修改原因"}]' onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">[{"original_text":"Document Preview Editor","new_text":"Document Preview Editor Pro","reason":"版本升级"},{"original_text":"基于Flask的智能文档处理系统","new_text":"基于Flask的高级智能文档处理系统","reason":"功能增强"},{"original_text":"支持多种文档操作模式","new_text":"支持十多种文档操作模式","reason":"功能扩展"}]</textarea>
+                                    {% else %}
+                                        <textarea name="modifications" placeholder='[{"original_text":"old text","new_text":"new text","reason":"modification reason"}]' onchange="updateRequestInfo(this)" oninput="updateRequestInfo(this)" onclick="preventCollapse(event)">[{"original_text":"Document Preview Editor","new_text":"Document Preview Editor Pro","reason":"Version upgrade"},{"original_text":"intelligent document processing system based on Flask","new_text":"advanced intelligent document processing system based on Flask","reason":"Feature enhancement"},{"original_text":"supporting multiple document operation modes","new_text":"supporting over ten document operation modes","reason":"Feature expansion"}]</textarea>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    {% if current_language == 'zh' %}
+                                        <label>语言</label>
+                                    {% else %}
+                                        <label>Language</label>
+                                    {% endif %}
+                                    <div class="radio-group">
+                                        <label>
+                                            <input type="radio" name="language" value="zh" {% if current_language == "zh" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}中文{% else %}Chinese{% endif %}
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="language" value="en" {% if current_language == "en" %}checked{% endif %} onchange="updateRequestInfo(this)">
+                                            {% if current_language == 'zh' %}English{% else %}English{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                {% if current_language == 'zh' %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">运行并下载</button>
+                                {% else %}
+                                    <button type="submit" class="test-button" onclick="preventCollapse(event)">Run and Download</button>
+                                {% endif %}
+                            </form>
+                            
+                            <div class="result-area" id="result_direct_file_upload_json">
+                                {% if current_language == 'zh' %}
+                                    等待测试运行...
+                                {% else %}
+                                    Waiting for test to run...
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = window.location.origin;
+        
+        // 多语言文本
+        const translations = {
+            zh: {
+                'test_running': '正在运行测试...',
+                'test_failed': '测试失败',
+                'auto_load_test_failed': '自动加载测试失败',
+                'direct_fetch_test_success': '直接获取测试成功',
+                'direct_fetch_test_failed': '直接获取测试失败',
+                'please_select_document': '请选择文档文件',
+                'json_format_error': 'JSON格式错误',
+                'language_setting_failed': '语言设置失败',
+                'status': '状态',
+                'processing_time': '处理时间',
+                'file_generated': '文件已生成，点击下载按钮获取修改后的文档',
+                'download_modified_document': '下载修改后的文档',
+                'processing_complete': '处理完成',
+                'no_file_chosen': 'No file chosen',
+                'choose_file': 'Choose File'
+            },
+            en: {
+                'test_running': 'Running test...',
+                'test_failed': 'Test failed',
+                'auto_load_test_failed': 'Auto load test failed',
+                'direct_fetch_test_success': 'Direct fetch test successful',
+                'direct_fetch_test_failed': 'Direct fetch test failed',
+                'please_select_document': 'Please select document file',
+                'json_format_error': 'JSON format error',
+                'language_setting_failed': 'Language setting failed',
+                'status': 'Status',
+                'processing_time': 'Processing time',
+                'file_generated': 'File generated, click download button to get modified document',
+                'download_modified_document': 'Download modified document',
+                'processing_complete': 'Processing complete',
+                'no_file_chosen': 'No file chosen',
+                'choose_file': 'Choose File'
+            }
+        };
+        
+        // 获取当前语言
+        let currentLanguage = '{{ current_language }}' || 'zh';
+        
+        function getCurrentLanguage() {
+            return currentLanguage;
+        }
+        
+        // 动态获取当前语言设置
+        async function fetchCurrentLanguage() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/get_language`);
+                const data = await response.json();
+                if (data.success) {
+                    currentLanguage = data.language;
+                    return data.language;
+                }
+            } catch (e) {
+                console.warn('Failed to fetch current language:', e);
+            }
+            return currentLanguage;
+        }
+        
+        // 获取翻译文本
+        function getText(key) {
+            const lang = getCurrentLanguage();
+            return translations[lang] && translations[lang][key] ? translations[lang][key] : translations['zh'][key] || key;
+        }
+        
+        // 更新文件信息显示
+        function updateFileInfo(fileInput, infoElementId) {
+            const infoElement = document.getElementById(infoElementId);
+            if (!infoElement) return;
+            
+            if (fileInput.files && fileInput.files.length > 0) {
+                const fileName = fileInput.files[0].name;
+                infoElement.textContent = fileName;
+                infoElement.className = 'custom-file-info has-file';
+            } else {
+                // 文件上传控件始终使用英文
+                infoElement.textContent = 'No file chosen';
+                infoElement.className = 'custom-file-info no-file';
+            }
+        }
+        
+        // 同步包装函数，用于HTML事件调用
+        function updateFileInfoSync(fileInput, infoElementId) {
+            updateFileInfo(fileInput, infoElementId);
+        }
+        
+        // 更新所有自定义文件上传控件的文本
+        function updateCustomFileUploadTexts() {
+            // 文件上传控件始终使用英文，不管当前语言环境
+            console.log('Updating file upload texts to English...');
+            
+            // 更新所有按钮文本并重新绑定事件
+            const buttons = document.querySelectorAll('.custom-file-button');
+            console.log('Found', buttons.length, 'file upload buttons');
+            buttons.forEach((button, index) => {
+                console.log('Updating button', index, 'from', button.textContent, 'to Choose File');
+                button.textContent = 'Choose File';
+                
+                // 重新绑定点击事件，确保触发正确的文件输入框
+                button.onclick = function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    console.log('Custom file button clicked');
+                    
+                    // 查找对应的文件输入框
+                    const fileInput = document.querySelector(`#${this.getAttribute('for')}`);
+                    if (fileInput) {
+                        console.log('Triggering file input:', fileInput.id);
+                        fileInput.click();
+                    }
+                    
+                    return false;
+                };
+            });
+            
+            // 更新所有文件信息文本（包括no-file和has-file类）
+            const infos = document.querySelectorAll('.custom-file-info');
+            console.log('Found', infos.length, 'file info elements');
+            infos.forEach((info, index) => {
+                // 如果是没有文件选择的状态，强制设置为英文
+                if (info.classList.contains('no-file') || !info.textContent || info.textContent.includes('未选择') || info.textContent.includes('选择文件')) {
+                    console.log('Updating info', index, 'from', info.textContent, 'to No file chosen');
+                    info.textContent = 'No file chosen';
+                    info.className = 'custom-file-info no-file';
+                }
+            });
+            
+            console.log('File upload texts update completed');
+        }
+        
+        // 切换场景展开/折叠状态
+        function toggleScenario(cardElement, scenarioId) {
+            // 阻止事件冒泡
+            if (event) event.stopPropagation();
+            
+            // 切换展开/折叠状态
+            if (cardElement.classList.contains('collapsed')) {
+                // 先折叠所有其他卡片
+                document.querySelectorAll('.scenario-card.expanded').forEach(card => {
+                    if (card !== cardElement) {
+                        card.classList.remove('expanded', 'selected');
+                        card.classList.add('collapsed');
+                    }
+                });
+                
+                // 展开当前卡片
+                cardElement.classList.remove('collapsed');
+                cardElement.classList.add('expanded', 'selected');
+                
+                // 初始化请求信息
+                setTimeout(() => {
+                    const firstInput = cardElement.querySelector('input, textarea, select');
+                    if (firstInput) {
+                        updateRequestInfo(firstInput);
+                    }
+                }, 100);
+            } else {
+                // 折叠当前卡片
+                cardElement.classList.remove('expanded', 'selected');
+                cardElement.classList.add('collapsed');
+            }
+        }
+        
+        // 阻止文件输入框和下载链接的事件冒泡
+        function preventCollapse(event) {
+            event.stopPropagation();
+        }
+        
+        // 更新请求信息显示
+        function updateRequestInfo(element) {
+            const form = element.closest('form');
+            if (!form) return;
+            
+            const scenarioType = form.getAttribute('onsubmit').match(/run(AutoLoad|DirectFetch)Test\(event, '([^']+)'\)/);
+            if (!scenarioType) return;
+            
+            const scenario = scenarioType[2];
+            const isDirect = scenarioType[1] === 'DirectFetch';
+            
+            const requestInfo = document.getElementById(`request_info_${scenario}`);
+            if (!requestInfo) return;
+            
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (key === 'document_file' || key === 'modifications_file') {
+                    // 强制使用英文文本，不管语言环境如何
+                    data[key] = value.name || 'No file chosen';
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            // 构建完整的API地址
+            const apiEndpoint = '/api/auto_load'; // 所有场景都使用auto_load API
+            const fullApiUrl = `${API_BASE_URL}${apiEndpoint}`;
+            
+            let requestBody = '';
+            if (scenario.includes('upload') && scenario.includes('json')) {
+                // 文件上传+JSON场景
+                requestBody = `FormData {\n`;
+                requestBody += `  document: ${data.document_file}\n`;
+                requestBody += `  modifications: JSON.stringify([...])\n`;
+                requestBody += `  auto_apply: ${data.auto_apply}\n`;
+                requestBody += `  language: ${data.language}\n`;
+                requestBody += `}`;
+            } else if (scenario.includes('json')) {
+                // 纯JSON场景：需要解析modifications字段
+                const jsonData = { ...data };
+                try {
+                    if (data.modifications) {
+                        jsonData.modifications = JSON.parse(data.modifications);
+                    }
+                } catch (e) {
+                    jsonData.modifications = '⚠️ JSON格式错误';
+                }
+                requestBody = JSON.stringify(jsonData, null, 2);
+            } else if (scenario.includes('upload')) {
+                // 纯文件上传场景
+                requestBody = `FormData {\n`;
+                for (let [key, value] of Object.entries(data)) {
+                    requestBody += `  ${key}: ${JSON.stringify(value)}\n`;
+                }
+                requestBody += `}`;
+            } else {
+                // 纯地址场景
+                requestBody = JSON.stringify(data, null, 2);
+            }
+            
+            const apiUrlElement = requestInfo.querySelector('.api-url');
+            const requestBodyElement = requestInfo.querySelector('.request-body');
+            
+            if (apiUrlElement) {
+                apiUrlElement.textContent = `POST ${fullApiUrl}`;
+            }
+            
+            if (requestBodyElement) {
+                requestBodyElement.textContent = requestBody;
+            }
+        }
+        
+        // 运行自动加载测试
+        async function runAutoLoadTest(event, scenarioType) {
+            event.preventDefault();
+            event.stopPropagation(); // 防止页签收缩
+            
+            const form = event.target;
+            const resultArea = document.getElementById(`result_${scenarioType}`);
+            
+            try {
+                resultArea.textContent = getText('test_running');
+                resultArea.className = 'result-area';
+                
+                const formData = new FormData(form);
+                let requestBody;
+                let headers = {};
+                
+                // 处理不同场景类型
+                if (scenarioType.includes('upload') && scenarioType.includes('json')) {
+                    // 文件上传+JSON场景：需要特殊处理
+                    const docFile = formData.get('document_file');
+                    if (!docFile || !docFile.name) {
+                        throw new Error(getText('please_select_document'));
+                    }
+                    
+                    let modifications;
+                    try {
+                        modifications = JSON.parse(formData.get('modifications'));
+                    } catch (e) {
+                        throw new Error(getText('json_format_error') + ': ' + e.message);
+                    }
+                    
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('document_file', docFile);
+                    uploadFormData.append('modifications', JSON.stringify(modifications));
+                    uploadFormData.append('auto_apply', formData.get('auto_apply'));
+                    uploadFormData.append('language', formData.get('language'));
+                    
+                    requestBody = uploadFormData;
+                } else if (scenarioType.includes('json')) {
+                    // 纯JSON场景：需要解析JSON
+                    let modifications;
+                    try {
+                        modifications = JSON.parse(formData.get('modifications'));
+                    } catch (e) {
+                        throw new Error(getText('json_format_error') + ': ' + e.message);
+                    }
+                    
+                    const jsonData = {
+                        document: formData.get('document'),
+                        modifications: modifications,
+                        auto_apply: formData.get('auto_apply') === 'true',
+                        language: formData.get('language')
+                    };
+                    
+                    requestBody = JSON.stringify(jsonData);
+                    headers = { 'Content-Type': 'application/json' };
+                } else if (scenarioType.includes('upload')) {
+                    // 纯文件上传场景
+                    const docFile = formData.get('document_file');
+                    const modFile = formData.get('modifications_file');
+                    
+                    if (!docFile || !docFile.name) {
+                        throw new Error(getText('please_select_document'));
+                    }
+                    
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('document_file', docFile);
+                    
+                    if (modFile && modFile.name) {
+                        uploadFormData.append('modifications_file', modFile);
+                    }
+                    
+                    uploadFormData.append('auto_apply', formData.get('auto_apply'));
+                    uploadFormData.append('language', formData.get('language'));
+                    
+                    requestBody = uploadFormData;
+                } else {
+                    // 纯地址场景
+                    const jsonData = {
+                        document: formData.get('document'),
+                        modifications: formData.get('modifications'),
+                        auto_apply: formData.get('auto_apply') === 'true',
+                        language: formData.get('language')
+                    };
+                    requestBody = JSON.stringify(jsonData);
+                    headers = { 'Content-Type': 'application/json' };
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/api/auto_load`, {
+                    method: 'POST',
+                    body: requestBody,
+                    headers: headers
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // 先设置语言，然后构建跳转URL
+                    try {
+                        await fetch(`${API_BASE_URL}/api/set_language`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ language: formData.get('language') })
+                        });
+                    } catch (e) {
+                        console.warn(getText('language_setting_failed') + ':', e);
+                    }
+                    
+                    // 使用doc_id直接跳转到主页，这样可以直接加载已处理的文档
+                    const params = new URLSearchParams({
+                        doc_id: data.doc_id,
+                        from_test: 'true'
+                    });
+                    window.location.href = `/?${params.toString()}`;
+                    return;
+                } else {
+                    throw new Error(data.message || getText('auto_load_test_failed'));
+                }
+            } catch (error) {
+                resultArea.textContent = `❌ ${getText('test_failed')}: ${error.message}`;
+                resultArea.className = 'result-area result-error';
+            }
+        }
+        
+        // 运行直接获取测试
+        async function runDirectFetchTest(event, scenarioType) {
+            event.preventDefault();
+            event.stopPropagation(); // 防止页签收缩
+            
+            const form = event.target;
+            const resultArea = document.getElementById(`result_${scenarioType}`);
+            const startTime = Date.now(); // 记录开始时间
+            
+            try {
+                resultArea.textContent = getText('test_running');
+                resultArea.className = 'result-area';
+                
+                const formData = new FormData(form);
+                let requestBody;
+                let headers = {};
+                let apiEndpoint = '/api/auto_load'; // 默认使用auto_load API
+                
+                // 处理不同场景类型
+                if (scenarioType.includes('upload') && scenarioType.includes('json')) {
+                    // 文件上传+JSON场景：使用auto_load API
+                    const docFile = formData.get('document_file');
+                    if (!docFile || !docFile.name) {
+                        throw new Error(getText('please_select_document'));
+                    }
+                    
+                    let modifications;
+                    try {
+                        modifications = JSON.parse(formData.get('modifications'));
+                    } catch (e) {
+                        throw new Error(getText('json_format_error') + ': ' + e.message);
+                    }
+                    
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('document_file', docFile);
+                    uploadFormData.append('modifications', JSON.stringify(modifications));
+                    uploadFormData.append('language', formData.get('language'));
+                    uploadFormData.append('auto_apply', 'true');
+                    
+                    requestBody = uploadFormData;
+                    apiEndpoint = '/api/auto_load';
+                } else if (scenarioType.includes('json')) {
+                    // 纯JSON场景：使用auto_load API
+                    let modifications;
+                    try {
+                        modifications = JSON.parse(formData.get('modifications'));
+                    } catch (e) {
+                        throw new Error(getText('json_format_error') + ': ' + e.message);
+                    }
+                    
+                    const jsonData = {
+                        document: formData.get('document'),
+                        modifications: modifications,
+                        auto_apply: true,
+                        language: formData.get('language')
+                    };
+                    
+                    requestBody = JSON.stringify(jsonData);
+                    headers = { 'Content-Type': 'application/json' };
+                } else if (scenarioType.includes('upload')) {
+                    // 纯文件上传场景：使用auto_load API以确保正确处理修改
+                    const docFile = formData.get('document_file');
+                    const modFile = formData.get('modifications_file');
+                    
+                    if (!docFile || !docFile.name) {
+                        throw new Error(getText('please_select_document'));
+                    }
+                    
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('document_file', docFile);
+                    
+                    if (modFile && modFile.name) {
+                        uploadFormData.append('modifications_file', modFile);
+                    }
+                    
+                    uploadFormData.append('auto_apply', 'true');
+                    uploadFormData.append('language', formData.get('language'));
+                    
+                    requestBody = uploadFormData;
+                    apiEndpoint = '/api/auto_load';
+                } else {
+                    // 纯地址场景：使用auto_load API
+                    const jsonData = {
+                        document: formData.get('document'),
+                        modifications: formData.get('modifications'),
+                        auto_apply: true,
+                        language: formData.get('language')
+                    };
+                    requestBody = JSON.stringify(jsonData);
+                    headers = { 'Content-Type': 'application/json' };
+                }
+                
+                const response = await fetch(`${API_BASE_URL}${apiEndpoint}`, {
+                    method: 'POST',
+                    body: requestBody,
+                    headers: headers
+                });
+                
+                const data = await response.json();
+                const endTime = Date.now(); // 记录结束时间
+                const processingTime = `${endTime - startTime}ms`; // 计算处理时间
+                
+                if (response.ok && data.success) {
+                    let result = `✅ ${getText('direct_fetch_test_success')}\n${getText('status')}: ${response.status}\n${getText('processing_time')}: ${processingTime}\n${getText('status')}: ${data.message || getText('processing_complete')}`;
+                    
+                    // 如果有下载链接，添加下载按钮
+                    if (data.download_url) {
+                        result += `\n\n📥 ${getText('file_generated')}`;
+                        resultArea.innerHTML = `<pre>${result}</pre>
+<div style="margin-top: 15px;">
+    <a href="${data.download_url}" download class="test-button" style="display: inline-block; text-align: center; text-decoration: none; width: auto; padding: 10px 20px;" onclick="preventCollapse(event)">
+        📥 ${getText('download_modified_document')}
+    </a>
+</div>`;
+                    } else {
+                        resultArea.textContent = result;
+                    }
+                    resultArea.className = 'result-area result-success';
+                } else {
+                    throw new Error(data.message || getText('direct_fetch_test_failed'));
+                }
+            } catch (error) {
+                resultArea.textContent = `❌ ${getText('test_failed')}: ${error.message}`;
+                resultArea.className = 'result-area result-error';
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保所有卡片初始状态为折叠
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                if (!card.classList.contains('collapsed') && !card.classList.contains('expanded')) {
+                    card.classList.add('collapsed');
+                }
+            });
+            
+            // 立即更新自定义文件上传控件的文本
+            updateCustomFileUploadTexts();
+            
+            // 延迟再次更新，确保所有动态内容都已加载
+            setTimeout(function() {
+                updateCustomFileUploadTexts();
+                console.log('Secondary file upload text update completed');
+            }, 500);
+            
+            // 为所有文件输入框添加事件处理
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('click', preventCollapse);
+                input.addEventListener('change', preventCollapse);
+            });
+            
+            // 为所有表单元素添加事件阻止冒泡（除了提交按钮）
+            document.querySelectorAll('input, textarea, select').forEach(element => {
+                if (element.type !== 'submit' && element.type !== 'button') {
+                    element.addEventListener('click', preventCollapse);
+                    element.addEventListener('change', preventCollapse);
+                    element.addEventListener('input', preventCollapse);
+                }
+            });
+            
+            // 为所有radio按钮和checkbox添加事件阻止冒泡
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+                input.addEventListener('click', preventCollapse);
+                input.addEventListener('change', preventCollapse);
+            });
+            
+            // 为测试按钮添加事件阻止冒泡
+            document.querySelectorAll('.test-button').forEach(button => {
+                button.addEventListener('click', preventCollapse);
+            });
+            
+            // 为下载链接添加事件阻止冒泡
+            document.addEventListener('click', function(event) {
+                if (event.target.tagName === 'A' && event.target.hasAttribute('download')) {
+                    preventCollapse(event);
+                }
+            });
+            
+
+        });
+    </script>
+</body>
+</html>
