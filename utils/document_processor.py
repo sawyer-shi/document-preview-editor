@@ -39,8 +39,17 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 from utils.i18n import get_text
 import docx2txt
-import win32com.client as win32
-import pythoncom
+
+# 条件导入 Windows 特有的模块
+try:
+    if os.name == 'nt':  # 只在 Windows 环境下导入
+        import win32com.client as win32
+        import pythoncom
+        WINDOWS_COM_AVAILABLE = True
+    else:
+        WINDOWS_COM_AVAILABLE = False
+except ImportError:
+    WINDOWS_COM_AVAILABLE = False
 
 class EnhancedWordProcessor:
     """增强的Word文档处理器"""
@@ -102,7 +111,7 @@ class EnhancedWordProcessor:
                 return libreoffice_result
             
             # 方法2: 使用win32com（仅Windows，但很可靠）
-            if os.name == 'nt':
+            if WINDOWS_COM_AVAILABLE:
                 win32_result = self._convert_with_win32com(doc_path)
                 if win32_result:
                     print(f"✅ {get_text('doc_conversion_limited')}")
@@ -359,10 +368,13 @@ class EnhancedWordProcessor:
     def _convert_with_win32com(self, doc_path: str) -> Optional[str]:
         """使用Windows COM组件转换DOC文件"""
         try:
-            import win32com.client
+            # 检查 Windows COM 是否可用
+            if not WINDOWS_COM_AVAILABLE:
+                print("win32com不可用 - 不是Windows环境或未安装")
+                return None
             
             # 创建Word应用程序对象
-            word_app = win32com.client.Dispatch("Word.Application")
+            word_app = win32.Dispatch("Word.Application")
             word_app.Visible = False
             
             # 打开DOC文件

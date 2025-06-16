@@ -1,1 +1,80 @@
- 
+# Git files
+.git
+.gitignore
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Development files
+.env.local
+.env.development
+
+# Node modules (if any)
+node_modules/
+
+# Test files
+test/
+tests/
+*_test.py
+test_*.py
+
+# Local development files
+local/
+*.local
+
+# Upload files (will be created in container)
+uploads/*
+
+# Docker files (not needed in container)
+Dockerfile*
+docker-compose*.yml
+.dockerignore 
