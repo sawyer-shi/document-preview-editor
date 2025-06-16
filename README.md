@@ -8,7 +8,7 @@ A powerful web-based document editing system that supports intelligent document 
 
 一个强大的基于Web的文档编辑系统，支持智能文档处理和多语言支持。支持修改前后的文档对比，支持对修改后的文件下载并且格式保持不变。
 
-![Uploading image.png…]()
+![20b8dc0e-3574-4afd-946e-7dd362d080e9](https://github.com/user-attachments/assets/7d5e19e9-6206-41fc-878e-da4d88e907cb)
 
 
 ## ✨ Features / 功能特性
