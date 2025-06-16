@@ -90,4 +90,26 @@ logs/
 uploads/
 
 # Test files
-test_*.py 
+test_*.py
+
+# Fix and temporary documentation files (不提交到GitHub)
+*fix.md
+*FIX.md
+*_fix.md
+*_FIX.md
+DOCKER_FIX.md
+README_FIX.md
+INSTALL_FIX.md
+API_FIX.md
+
+# Temporary documentation
+*_temp.md
+*_tmp.md
+TEMP_*.md
+TMP_*.md
+
+# Local development notes
+NOTES.md
+notes.md
+TODO_LOCAL.md
+DEVELOPMENT.md 
