@@ -842,11 +842,284 @@ function highlightText(modification) {
     // 在原始文档中高亮原始文本（黄色背景）
     highlightTextInContainer(originalContentDiv, originalText, 'highlight-original');
     
+    // 在原始文档中添加字符级别的差异高亮（蓝色背景）
+    highlightCharacterDifferencesInOriginal(originalText, newText);
+    
     // 在修改后文档中高亮新文本（红色背景）
     if (modifiedContent) {
         highlightTextInContainer(previewContentDiv, newText, 'highlight-modified');
+        
+        // 在修改后文档中添加字符级别的差异高亮（蓝色背景）
+        highlightCharacterDifferencesInModified(originalText, newText);
     } else {
         console.log('没有修改后的文档内容');
+    }
+}
+
+// 新增：在原文档中应用字符级别差异高亮
+function highlightCharacterDifferencesInOriginal(originalText, newText) {
+    if (!originalText || !newText || originalText === newText) {
+        return;
+    }
+    
+    console.log('开始原文档字符级差异高亮:', { originalText, newText });
+    
+    // 找到所有已经高亮的原文档元素
+    const originalHighlights = document.querySelectorAll('#originalContent .highlight-original, #originalContent .highlight-original-run');
+    
+    originalHighlights.forEach(element => {
+        // 对每个高亮元素进行字符级差异标记（原文档视角）
+        applyCharacterDifferencesInOriginal(element, originalText, newText);
+    });
+}
+
+// 新增：在修改后文档中应用字符级别差异高亮
+function highlightCharacterDifferencesInModified(originalText, newText) {
+    if (!originalText || !newText || originalText === newText) {
+        return;
+    }
+    
+    console.log('开始修改后文档字符级差异高亮:', { originalText, newText });
+    
+    // 找到所有已经高亮的修改后文档元素
+    const modifiedHighlights = document.querySelectorAll('#previewContent .highlight-modified, #previewContent .highlight-modified-run');
+    
+    modifiedHighlights.forEach(element => {
+        // 对每个高亮元素进行字符级差异标记（修改后文档视角）
+        applyCharacterDifferencesInModified(element, originalText, newText);
+    });
+}
+
+// 新增：在原文档中应用字符级差异标记
+function applyCharacterDifferencesInOriginal(element, originalText, newText) {
+    try {
+        const elementText = element.textContent;
+        
+        // 检查元素是否包含原文本
+        if (!elementText.includes(originalText)) {
+            return;
+        }
+        
+        // 计算字符级差异（从原文档角度）
+        const diffs = computeCharacterDifferencesForOriginal(originalText, newText);
+        
+        if (diffs.length === 0) {
+            return;
+        }
+        
+        // 在元素中应用字符级高亮（原文档）
+        applyCharacterHighlightingInOriginal(element, originalText, diffs);
+        
+    } catch (error) {
+        console.error('应用原文档字符级差异时出错:', error);
+    }
+}
+
+// 新增：在修改后文档中应用字符级差异标记
+function applyCharacterDifferencesInModified(element, originalText, newText) {
+    try {
+        const elementText = element.textContent;
+        
+        // 检查元素是否包含新文本
+        if (!elementText.includes(newText)) {
+            return;
+        }
+        
+        // 计算字符级差异（从修改后文档角度）
+        const diffs = computeCharacterDifferencesForModified(originalText, newText);
+        
+        if (diffs.length === 0) {
+            return;
+        }
+        
+        // 在元素中应用字符级高亮（修改后文档）
+        applyCharacterHighlightingInModified(element, newText, diffs);
+        
+    } catch (error) {
+        console.error('应用修改后文档字符级差异时出错:', error);
+    }
+}
+
+// 新增：计算原文档的字符级差异（标记将要被修改的字符）
+function computeCharacterDifferencesForOriginal(original, modified) {
+    const differences = [];
+    const maxLength = Math.max(original.length, modified.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+        const originalChar = i < original.length ? original[i] : null;
+        const modifiedChar = i < modified.length ? modified[i] : null;
+        
+        if (originalChar !== null && modifiedChar === null) {
+            // 将要被删除的字符
+            differences.push({
+                type: 'to_be_deleted',
+                char: originalChar,
+                position: i
+            });
+        } else if (originalChar !== null && originalChar !== modifiedChar) {
+            // 将要被替换的字符
+            differences.push({
+                type: 'to_be_changed',
+                char: originalChar,
+                position: i
+            });
+        }
+        // 相同字符和新增字符（原文档中不存在）无需处理
+    }
+    
+    console.log('原文档字符差异计算结果:', differences);
+    return differences;
+}
+
+// 新增：计算修改后文档的字符级差异（标记已经被修改的字符）
+function computeCharacterDifferencesForModified(original, modified) {
+    const differences = [];
+    const maxLength = Math.max(original.length, modified.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+        const originalChar = i < original.length ? original[i] : null;
+        const modifiedChar = i < modified.length ? modified[i] : null;
+        
+        if (originalChar === null && modifiedChar !== null) {
+            // 新增的字符
+            differences.push({
+                type: 'added',
+                char: modifiedChar,
+                position: i
+            });
+        } else if (originalChar !== modifiedChar && modifiedChar !== null) {
+            // 替换的字符
+            differences.push({
+                type: 'changed',
+                char: modifiedChar,
+                position: i
+            });
+        }
+        // 删除的字符（在修改后文本中不显示）和相同字符无需处理
+    }
+    
+    console.log('修改后文档字符差异计算结果:', differences);
+    return differences;
+}
+
+// 新增：在原文档元素中应用字符级高亮
+function applyCharacterHighlightingInOriginal(element, targetText, differences) {
+    try {
+        const elementText = element.textContent;
+        
+        // 找到目标文本在元素中的位置
+        const textIndex = elementText.indexOf(targetText);
+        if (textIndex === -1) {
+            return;
+        }
+        
+        // 处理原文档的字符高亮
+        let highlightedText = '';
+        for (let i = 0; i < targetText.length; i++) {
+            const char = targetText[i];
+            const shouldHighlight = differences.some(diff => 
+                diff.position === i && 
+                (diff.type === 'to_be_deleted' || diff.type === 'to_be_changed')
+            );
+            
+            if (shouldHighlight) {
+                highlightedText += `<span class="highlight-changed-char">${escapeHtml(char)}</span>`;
+            } else {
+                highlightedText += escapeHtml(char);
+            }
+        }
+        
+        // 替换元素中的目标文本
+        const originalHTML = element.innerHTML;
+        const escapedTargetText = escapeHtml(targetText);
+        
+        // 尝试直接替换文本内容
+        if (originalHTML.includes(escapedTargetText)) {
+            element.innerHTML = originalHTML.replace(escapedTargetText, highlightedText);
+        } else {
+            // 如果直接替换失败，尝试处理文本节点
+            replaceTextInElement(element, targetText, highlightedText);
+        }
+        
+        console.log('原文档字符级高亮应用完成:', { targetText, differences: differences.length });
+        
+    } catch (error) {
+        console.error('应用原文档字符高亮时出错:', error);
+    }
+}
+
+// 新增：在修改后文档元素中应用字符级高亮
+function applyCharacterHighlightingInModified(element, targetText, differences) {
+    try {
+        const elementText = element.textContent;
+        
+        // 找到目标文本在元素中的位置
+        const textIndex = elementText.indexOf(targetText);
+        if (textIndex === -1) {
+            return;
+        }
+        
+        // 处理修改后文档的字符高亮
+        let highlightedText = '';
+        for (let i = 0; i < targetText.length; i++) {
+            const char = targetText[i];
+            const shouldHighlight = differences.some(diff => 
+                diff.position === i && 
+                (diff.type === 'added' || diff.type === 'changed')
+            );
+            
+            if (shouldHighlight) {
+                highlightedText += `<span class="highlight-changed-char">${escapeHtml(char)}</span>`;
+            } else {
+                highlightedText += escapeHtml(char);
+            }
+        }
+        
+        // 替换元素中的目标文本
+        const originalHTML = element.innerHTML;
+        const escapedTargetText = escapeHtml(targetText);
+        
+        // 尝试直接替换文本内容
+        if (originalHTML.includes(escapedTargetText)) {
+            element.innerHTML = originalHTML.replace(escapedTargetText, highlightedText);
+        } else {
+            // 如果直接替换失败，尝试处理文本节点
+            replaceTextInElement(element, targetText, highlightedText);
+        }
+        
+        console.log('修改后文档字符级高亮应用完成:', { targetText, differences: differences.length });
+        
+    } catch (error) {
+        console.error('应用修改后文档字符高亮时出错:', error);
+    }
+}
+
+// 新增：辅助函数 - 在元素中替换文本
+function replaceTextInElement(element, targetText, highlightedText) {
+    const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
+    
+    const textNodes = [];
+    let node;
+    while (node = walker.nextNode()) {
+        textNodes.push(node);
+    }
+    
+    for (const textNode of textNodes) {
+        if (textNode.textContent.includes(targetText)) {
+            const parent = textNode.parentNode;
+            const wrapper = document.createElement('span');
+            wrapper.innerHTML = textNode.textContent.replace(
+                targetText, 
+                highlightedText
+            );
+            parent.replaceChild(wrapper, textNode);
+            break;
+        }
     }
 }
 
@@ -905,6 +1178,17 @@ function clearHighlights() {
     // 清除run级别的高亮
     document.querySelectorAll('.highlight-original-run, .highlight-modified-run').forEach(run => {
         run.classList.remove('highlight-original-run', 'highlight-modified-run');
+    });
+    
+    // 清除字符级别的蓝色高亮
+    document.querySelectorAll('.highlight-changed-char').forEach(char => {
+        // 将高亮的字符替换为普通文本
+        const parent = char.parentNode;
+        if (parent) {
+            parent.replaceChild(document.createTextNode(char.textContent), char);
+            // 合并相邻的文本节点
+            parent.normalize();
+        }
     });
     
     // 清除连接线

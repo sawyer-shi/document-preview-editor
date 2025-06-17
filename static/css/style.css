@@ -1430,6 +1430,17 @@ body {
     border-radius: 2px !important;
 }
 
+/* 新增：字符级别的蓝色高亮样式 - 用于标记修改后文档中具体被修改的字符 */
+.highlight-changed-char {
+    background-color: rgba(0, 123, 255, 0.3) !important; /* 蓝色背景 */
+    padding: 1px 2px !important;
+    border-radius: 2px !important;
+    box-shadow: 0 0 3px rgba(0, 123, 255, 0.4) !important;
+    animation: highlight-glow-blue 1s ease-in-out !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
 /* 高亮动画效果 */
 @keyframes highlight-glow-yellow {
     0% { 
@@ -1458,6 +1469,22 @@ body {
     100% { 
         background-color: rgba(255, 0, 0, 0.15);
         box-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+    }
+}
+
+/* 字符级高亮的动画效果 */
+@keyframes highlight-glow-blue {
+    0% { 
+        background-color: rgba(0, 123, 255, 0.1);
+        box-shadow: 0 0 2px rgba(0, 123, 255, 0.3);
+    }
+    50% { 
+        background-color: rgba(0, 123, 255, 0.4);
+        box-shadow: 0 0 6px rgba(0, 123, 255, 0.6);
+    }
+    100% { 
+        background-color: rgba(0, 123, 255, 0.3);
+        box-shadow: 0 0 3px rgba(0, 123, 255, 0.4);
     }
 }
 
