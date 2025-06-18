@@ -39,6 +39,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 from utils.i18n import get_text
 import docx2txt
+from datetime import datetime
 
 # 条件导入 Windows 特有的模块
 try:
@@ -61,6 +62,7 @@ class EnhancedWordProcessor:
         self.images = {}  # 存储文档中的图片
         self.tables = []  # 存储表格数据
         self.styles = {}  # 存储样式信息
+        self.modification_reasons = {}  # 存储修改原因映射
     
     def load_document(self, file_path: str) -> Tuple[bool, str]:
         """加载文档，支持.docx和.txt格式"""
@@ -93,6 +95,186 @@ class EnhancedWordProcessor:
             
         except Exception as e:
             return False, f"{get_text('upload_failed')}: {str(e)}"
+    
+    def _add_comment_to_run(self, run, comment_text: str, author: str = "Document Editor"):
+        """为文本运行添加真正的Word批注"""
+        try:
+            # 生成唯一的批注ID
+            import time
+            comment_id = str(int(time.time() * 1000000) % 1000000)
+            
+            # 获取文档对象和批注部分
+            doc = self.modified_doc
+            if not hasattr(doc, '_part'):
+                print("文档对象无效，无法添加批注")
+                return False
+            
+            # 确保文档有批注部分
+            comments_part = self._ensure_comments_part(doc)
+            if not comments_part:
+                print("无法创建或获取批注部分")
+                return False
+            
+            # 创建批注内容
+            comment_element = self._create_comment_element(comment_id, comment_text, author)
+            if not comment_element:
+                print("无法创建批注元素")
+                return False
+            
+            # 将批注添加到批注部分
+            if not self._add_comment_to_comments_part(comments_part, comment_element):
+                print("无法将批注添加到批注部分")
+                return False
+            
+            # 在文本中添加批注引用
+            if not self._add_comment_reference_to_run(run, comment_id):
+                print("无法在文本中添加批注引用")
+                return False
+            
+            print(f"成功添加Word批注: {comment_text}")
+            return True
+            
+        except Exception as e:
+            print(f"添加Word批注失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def _ensure_comments_part(self, doc):
+        """确保文档有批注部分"""
+        try:
+            from docx.opc.constants import RELATIONSHIP_TYPE as RT
+            from docx.opc.part import Part
+            from docx.opc.packuri import PackURI
+            
+            # 检查是否已有批注部分
+            try:
+                comments_part = doc._part.part_related_by(RT.COMMENTS)
+                return comments_part
+            except KeyError:
+                pass
+            
+            # 创建新的批注部分
+            comments_part_uri = PackURI('/word/comments.xml')
+            comments_content = '''<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+</w:comments>'''
+            
+            # 创建批注部分对象
+            comments_part = Part(
+                comments_part_uri,
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml',
+                comments_content.encode('utf-8'),
+                doc._part.package
+            )
+            
+            # 建立关系
+            doc._part.relate_to(comments_part, RT.COMMENTS)
+            
+            return comments_part
+            
+        except Exception as e:
+            print(f"创建批注部分失败: {str(e)}")
+            return None
+    
+    def _create_comment_element(self, comment_id: str, comment_text: str, author: str):
+        """创建批注XML元素"""
+        try:
+            from lxml import etree
+            import datetime
+            
+            # 创建批注元素
+            w_ns = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            comment = etree.Element(f"{{{w_ns}}}comment")
+            comment.set(f"{{{w_ns}}}id", comment_id)
+            comment.set(f"{{{w_ns}}}author", author)
+            comment.set(f"{{{w_ns}}}date", datetime.datetime.now().isoformat())
+            
+            # 创建段落
+            para = etree.SubElement(comment, f"{{{w_ns}}}p")
+            
+            # 创建run
+            run = etree.SubElement(para, f"{{{w_ns}}}r")
+            
+            # 创建文本
+            text = etree.SubElement(run, f"{{{w_ns}}}t")
+            text.text = comment_text
+            
+            return comment
+            
+        except Exception as e:
+            print(f"创建批注元素失败: {str(e)}")
+            return None
+    
+    def _add_comment_to_comments_part(self, comments_part, comment_element):
+        """将批注添加到批注部分"""
+        try:
+            from lxml import etree
+            
+            # 解析批注部分的XML
+            comments_xml = comments_part.blob
+            comments_root = etree.fromstring(comments_xml)
+            
+            # 添加批注元素
+            comments_root.append(comment_element)
+            
+            # 更新批注部分内容
+            updated_xml = etree.tostring(comments_root, encoding='utf-8', xml_declaration=True)
+            comments_part._blob = updated_xml
+            
+            return True
+            
+        except Exception as e:
+            print(f"添加批注到批注部分失败: {str(e)}")
+            return False
+    
+    def _add_comment_reference_to_run(self, run, comment_id: str):
+        """在文本运行中添加批注引用"""
+        try:
+            from lxml import etree
+            
+            # 获取run的XML元素
+            run_elem = run._element
+            
+            # 创建批注开始标记
+            w_ns = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            comment_start = etree.Element(f"{{{w_ns}}}commentRangeStart")
+            comment_start.set(f"{{{w_ns}}}id", comment_id)
+            
+            # 创建批注结束标记
+            comment_end = etree.Element(f"{{{w_ns}}}commentRangeEnd")
+            comment_end.set(f"{{{w_ns}}}id", comment_id)
+            
+            # 创建批注引用
+            comment_ref = etree.Element(f"{{{w_ns}}}r")
+            comment_ref_elem = etree.SubElement(comment_ref, f"{{{w_ns}}}commentReference")
+            comment_ref_elem.set(f"{{{w_ns}}}id", comment_id)
+            
+            # 获取父段落
+            parent_para = run_elem.getparent()
+            run_index = list(parent_para).index(run_elem)
+            
+            # 插入批注标记
+            parent_para.insert(run_index, comment_start)
+            parent_para.insert(run_index + 2, comment_end)
+            parent_para.insert(run_index + 3, comment_ref)
+            
+            return True
+            
+        except Exception as e:
+            print(f"添加批注引用失败: {str(e)}")
+            return False
+    
+
+    
+
+    
+    def _get_modification_reason(self, original_text: str) -> str:
+        """获取修改原因"""
+        reason = self.modification_reasons.get(original_text, "")
+        if not reason.strip():
+            return "未注明修改原因"
+        return reason.strip()
     
     def _convert_doc_to_docx(self, doc_path: str) -> Optional[str]:
         """将.doc文件转换为.docx文件 - 改进版"""
@@ -1212,6 +1394,14 @@ class EnhancedWordProcessor:
             if not self.original_doc:
                 return False, get_text('file_not_found')
             
+            # 构建修改原因映射
+            self.modification_reasons = {}
+            for mod in modifications:
+                original_text = mod.get('original_text', '')
+                reason = mod.get('reason', '')
+                if original_text:
+                    self.modification_reasons[original_text] = reason
+            
             from utils.i18n import get_text
             print(get_text('document_applying_modifications'))
             
@@ -1295,11 +1485,14 @@ class EnhancedWordProcessor:
             return False
     
     def _replace_text_in_paragraph(self, paragraph, original_text: str, new_text: str):
-        """在段落中替换文本，保持格式"""
+        """在段落中替换文本，保持格式并添加批注"""
         try:
             # 检查段落是否包含目标文本
             if original_text not in paragraph.text:
                 return
+            
+            # 获取修改原因
+            reason = self._get_modification_reason(original_text)
             
             # 遍历段落中的所有runs
             for run in paragraph.runs:
@@ -1314,8 +1507,11 @@ class EnhancedWordProcessor:
                     except:
                         pass
                     
+                    # 添加批注
+                    self._add_comment_to_run(run, reason)
+                    
                     from utils.i18n import get_text
-                    print(f"{get_text('paragraph_replacement')}: '{original_text}' -> '{new_text}'")
+                    print(f"{get_text('paragraph_replacement')}: '{original_text}' -> '{new_text}' (批注: {reason})")
                     return
             
             # 如果单个run中没有完整的文本，可能文本跨越多个runs
@@ -1335,6 +1531,9 @@ class EnhancedWordProcessor:
                         paragraph.runs[0].font.highlight_color = WD_COLOR_INDEX.YELLOW
                     except:
                         pass
+                    
+                    # 添加批注
+                    self._add_comment_to_run(paragraph.runs[0], reason)
                 else:
                     # 如果没有runs，创建一个新的
                     new_run = paragraph.add_run(new_full_text)
@@ -1343,9 +1542,12 @@ class EnhancedWordProcessor:
                         new_run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                     except:
                         pass
+                    
+                    # 添加批注
+                    self._add_comment_to_run(new_run, reason)
                 
                 from utils.i18n import get_text
-                print(f"{get_text('text_replacement')}: '{original_text}' -> '{new_text}'")
+                print(f"{get_text('text_replacement')}: '{original_text}' -> '{new_text}' (批注: {reason})")
                     
         except Exception as e:
             print(f"替换段落文本时出错: {str(e)}")
@@ -1446,10 +1648,12 @@ class EnhancedWordProcessor:
                 
                 # 应用文本修改
                 modified = False
+                modified_original_text = None
                 for original_text, new_text in modification_map.items():
                     if original_text in text:
                         text = text.replace(original_text, new_text)
                         modified = True
+                        modified_original_text = original_text
                 
                 # 创建新run
                 new_run = new_para.add_run(text)
@@ -1457,12 +1661,18 @@ class EnhancedWordProcessor:
                 # 复制run格式
                 self._copy_run_format(run, new_run)
                 
-                # 如果文本被修改，添加高亮
+                # 如果文本被修改，添加高亮和批注
                 if modified:
                     try:
                         new_run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                     except:
                         pass
+                    
+                    # 添加批注
+                    if modified_original_text:
+                        reason = self._get_modification_reason(modified_original_text)
+                        self._add_comment_to_run(new_run, reason)
+                        print(f"段落修改: '{modified_original_text}' -> '{text}' (批注: {reason})")
                 
                 # 复制run中的嵌入对象（如图片）
                 self._copy_run_embedded_objects(run, new_run)
@@ -1596,22 +1806,30 @@ class EnhancedWordProcessor:
                             
                             # 应用修改
                             modified = False
+                            modified_original_text = None
                             for original_text, new_text in modification_map.items():
                                 if original_text in text:
                                     text = text.replace(original_text, new_text)
                                     modified = True
+                                    modified_original_text = original_text
                             
                             new_run = new_para.add_run(text)
                             
                             # 复制格式
                             self._copy_run_format(run, new_run)
                             
-                            # 高亮修改内容
+                            # 高亮修改内容并添加批注
                             if modified:
                                 try:
                                     new_run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                                 except:
                                     pass
+                                
+                                # 添加批注
+                                if modified_original_text:
+                                    reason = self._get_modification_reason(modified_original_text)
+                                    self._add_comment_to_run(new_run, reason)
+                                    print(f"表格修改: '{modified_original_text}' -> '{text}' (批注: {reason})")
                             
                             # 复制嵌入对象
                             self._copy_run_embedded_objects(run, new_run)
