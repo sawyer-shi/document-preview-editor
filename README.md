@@ -54,7 +54,26 @@ A powerful web-based document editing system that supports intelligent document 
 
 #### Installation Methods
 
-**Method 1: Direct Installation**
+**Method 1: Docker Deployment (Recommended)**
+```bash
+# Clone the repository
+git clone https://github.com/sawyer-shi/document-preview-editor.git
+cd document-preview-editor
+
+# Run with Docker Compose
+docker-compose up -d
+
+# Custom port deployment
+HOST_PORT=8080 docker-compose up -d
+
+# Check status
+docker-compose ps
+
+# Stop services
+docker-compose down
+```
+
+**Method 2: Direct Installation**
 ```bash
 # Clone the repository
 git clone https://github.com/sawyer-shi/document-preview-editor.git
@@ -67,7 +86,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-**Method 2: Virtual Environment**
+**Method 3: Virtual Environment**
 ```bash
 # Clone the repository
 git clone https://github.com/sawyer-shi/document-preview-editor.git
@@ -89,7 +108,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-**Method 3: Conda Environment**
+**Method 4: Conda Environment**
 ```bash
 # Clone the repository
 git clone https://github.com/sawyer-shi/document-preview-editor.git
@@ -104,25 +123,6 @@ pip install -r requirements.txt
 
 # Run the application
 python run.py
-```
-
-**Method 4: Docker Deployment**
-```bash
-# Clone the repository
-git clone https://github.com/sawyer-shi/document-preview-editor.git
-cd document-preview-editor
-
-# Run with Docker Compose
-docker-compose up -d
-
-# Custom port deployment
-HOST_PORT=8080 docker-compose up -d
-
-# Check status
-docker-compose ps
-
-# Stop services
-docker-compose down
 ```
 
 #### Access the Application
@@ -304,7 +304,26 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 #### 安装方式
 
-**方式一：源码直接安装**
+**方式一：Docker容器部署（推荐）**
+```bash
+# 克隆项目
+git clone https://github.com/sawyer-shi/document-preview-editor.git
+cd document-preview-editor
+
+# 使用Docker Compose运行
+docker-compose up -d
+
+# 自定义端口运行
+HOST_PORT=8080 docker-compose up -d
+
+# 查看运行状态
+docker-compose ps
+
+# 停止服务
+docker-compose down
+```
+
+**方式二：源码直接安装**
 ```bash
 # 克隆项目
 git clone https://github.com/sawyer-shi/document-preview-editor.git
@@ -317,7 +336,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-**方式二：虚拟环境安装**
+**方式三：虚拟环境安装**
 ```bash
 # 克隆项目
 git clone https://github.com/sawyer-shi/document-preview-editor.git
@@ -339,7 +358,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-**方式三：Conda环境安装**
+**方式四：Conda环境安装**
 ```bash
 # 克隆项目
 git clone https://github.com/sawyer-shi/document-preview-editor.git
@@ -354,25 +373,6 @@ pip install -r requirements.txt
 
 # 运行项目
 python run.py
-```
-
-**方式四：Docker容器部署**
-```bash
-# 克隆项目
-git clone https://github.com/sawyer-shi/document-preview-editor.git
-cd document-preview-editor
-
-# 使用Docker Compose运行
-docker-compose up -d
-
-# 自定义端口运行
-HOST_PORT=8080 docker-compose up -d
-
-# 查看运行状态
-docker-compose ps
-
-# 停止服务
-docker-compose down
 ```
 
 #### 访问应用
