@@ -21,7 +21,10 @@
 
 A powerful web-based document editing system that supports intelligent document processing with multi-language support. Features document comparison before and after modifications, and supports downloading modified documents while maintaining original formatting.
 
-![Demo Screenshot](https://github.com/user-attachments/assets/7d5e19e9-6206-41fc-878e-da4d88e907cb)
+![image](https://github.com/user-attachments/assets/a7257b1f-a7e3-4709-893a-f8aaf5319be9)
+![image](https://github.com/user-attachments/assets/2705459e-f692-4e5c-b6da-d5b7c6bada04)
+
+
 
 ### ✨ Features
 
@@ -267,7 +270,8 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 一个强大的基于Web的文档编辑系统，支持智能文档处理和多语言支持。支持修改前后的文档对比，支持对修改后的文件下载并且格式保持不变。
 
-![Demo Screenshot](https://github.com/user-attachments/assets/7d5e19e9-6206-41fc-878e-da4d88e907cb)
+![image](https://github.com/user-attachments/assets/a7257b1f-a7e3-4709-893a-f8aaf5319be9)
+![image](https://github.com/user-attachments/assets/2705459e-f692-4e5c-b6da-d5b7c6bada04)
 
 ### ✨ 功能特性
 
