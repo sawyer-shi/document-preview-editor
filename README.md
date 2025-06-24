@@ -20,9 +20,14 @@
 ### 🌟 Overview
 
 A powerful web-based document editing system that supports intelligent document processing with multi-language support. Features document comparison before and after modifications, and supports downloading modified documents while maintaining original formatting.
-
+Editor in home page：
 ![image](https://github.com/user-attachments/assets/a7257b1f-a7e3-4709-893a-f8aaf5319be9)
-![image](https://github.com/user-attachments/assets/2705459e-f692-4e5c-b6da-d5b7c6bada04)
+‌Download the modified document and review it：
+![image](https://github.com/user-attachments/assets/22defd2f-80f5-49cc-9b6b-64e4d62b0ac6)
+Support the API:
+![image](https://github.com/user-attachments/assets/a91ac647-f147-44e1-8722-b8f0705e475e)
+
+
 
 
 
@@ -269,9 +274,12 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 ### 🌟 项目概述
 
 一个强大的基于Web的文档编辑系统，支持智能文档处理和多语言支持。支持修改前后的文档对比，支持对修改后的文件下载并且格式保持不变。
-
+首页编辑效果：
 ![image](https://github.com/user-attachments/assets/a7257b1f-a7e3-4709-893a-f8aaf5319be9)
-![image](https://github.com/user-attachments/assets/2705459e-f692-4e5c-b6da-d5b7c6bada04)
+下载修改后的文档，自动带上了修改批准：
+![image](https://github.com/user-attachments/assets/22defd2f-80f5-49cc-9b6b-64e4d62b0ac6)
+支持API调用:
+![image](https://github.com/user-attachments/assets/a91ac647-f147-44e1-8722-b8f0705e475e)
 
 ### ✨ 功能特性
 
